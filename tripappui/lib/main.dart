@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MaterialApp(
+void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      theme: ThemeData(fontFamily: "Nunito"),
+      home: const HomePage(),
     ));
 
 class HomePage extends StatefulWidget {
@@ -12,8 +13,9 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
   late PageController _pageController;
+  int totalPage = 4;
 
   void _onScroll() {}
 
@@ -33,21 +35,25 @@ class _HomePageState extends State<HomePage> {
       controller: _pageController,
       children: <Widget>[
         makePage(
+          page: 1,
           image: 'assets/images/one.jpg',
           title: 'SONGYUQI',
           description: 'Always be proud of yourself',
         ),
         makePage(
+          page: 2,
           image: 'assets/images/two.jpg',
           title: '宋雨琦',
           description: '先爱自己，再爱别人',
         ),
         makePage(
+          page: 3,
           image: 'assets/images/three.jpg',
           title: 'WUGI',
           description: 'Standing tall like a giant',
         ),
         makePage(
+          page: 4,
           image: 'assets/images/four.jpg',
           title: '小饼干',
           description: '会永远在你身后！',
@@ -56,7 +62,7 @@ class _HomePageState extends State<HomePage> {
     ));
   }
 
-  Widget makePage({image, title, description}) {
+  Widget makePage({image, title, description, page}) {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -83,22 +89,22 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(
                 height: 40,
               ),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: <Widget>[
                   Text(
-                    '1',
-                    style: TextStyle(
+                    page.toString(),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    '/4',
-                    style: TextStyle(
+                    '/$totalPage',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
                     ),
@@ -191,7 +197,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const Text(
                       'READ MORE', style: TextStyle(color: Colors.white),
-                    )
+                    ),
+                    const SizedBox(height: 30,),
                   ],
                 ),
               ),
