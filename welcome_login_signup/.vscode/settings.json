@@ -1,0 +1,6 @@
+{
+    "java.project.sourcePaths": [
+        "android/app/src"
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
