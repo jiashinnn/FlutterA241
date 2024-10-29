@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:my_member_link/myconfig.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -27,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
-                    hintText: "Yor Email"),
+                    hintText: "Your Email"),
               ),
               const SizedBox(
                 height: 10,
@@ -39,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
-                    hintText: "Yor Password"),
+                    hintText: "Your Password"),
               ),
               const SizedBox(
                 height: 20,
@@ -57,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(context); // want to destroy that class
                 },
                 child: const Text("Already registered? Login"),
               ),
@@ -68,5 +71,85 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void onRegisterDialog() {}
+  void onRegisterDialog() {
+    String email = emailcontroller.text;
+    String password = passwordcontroller.text;
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Please enter email and password"),
+      ));
+      return;
+    }
+    // showdialog is stateless widget - cannot update
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            title: const Text(
+              "Register New Account?",
+              style: TextStyle(),
+            ),
+            content: const Text(
+              "Are you sure?",
+              style: TextStyle(),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text(
+                  "Yes",
+                  style: TextStyle(),
+                ),
+                onPressed: () {
+                  userRegistration();
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text(
+                  "No",
+                  style: TextStyle(),
+                ),
+                onPressed: () {
+                   Navigator.of(context).pop();
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(
+                  //     content: Text("Registration Canceled"),
+                  //     backgroundColor: Colors.red,
+                  //   ),
+                  // );
+                },
+              ),
+            ],
+          );
+        });
+  }
+  
+  void userRegistration() {
+    String email = emailcontroller.text;
+    String pass = passwordcontroller.text;
+    http.post(Uri.parse("${Myconfig.servername}/memberlink/api/register_user.php"),
+        body: {"email": email, "password": pass}).then((response) {
+      //print(response.statusCode);
+      //print(response.body);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if(data['status'] == "success"){
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Registration Success"),
+          backgroundColor: Color.fromARGB(255, 12, 12, 12),
+          ));
+          // Navigator.push(
+          //   context, 
+          //   MaterialPageRoute(builder: (content) => const MainScreen()));
+        } else{
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Registration Failed"),
+            backgroundColor: Colors.red,
+          ));
+        }
+      }
+    });
+  }
 }
