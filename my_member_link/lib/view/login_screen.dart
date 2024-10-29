@@ -1,6 +1,9 @@
+import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:my_member_link/myconfig.dart';
+import 'package:my_member_link/view/register_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -99,6 +102,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               GestureDetector(
                 child: const Text("Forgot Password? "),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (content) => const RegisterScreen()));
+                },
+                child: const Text("Create new account"),
               )
             ],
           ),
@@ -116,12 +128,17 @@ class _LoginScreenState extends State<LoginScreen> {
       ));
       return;
     }
-    http.post(Uri.parse("http://172.20.10.3/memberlink/api/login_user.php"),
+    http.post(Uri.parse("${Myconfig.servername}/memberlink/api/login_user.php"),
         body: {"email": email, "password": password}).then((response) {
-      print(response.statusCode);
-      print(response.body);
+      //print(response.statusCode);
+      //print(response.body);
       if (response.statusCode == 200) {
-        
+        var data = jsonDecode(response.body);
+        if(data['status'] == "success"){
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login Failed"),
+          backgroundColor: Colors.red,
+          ));
+        }
       }
     });
   }
