@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:my_member_link/myconfig.dart';
 
 class NewNewsScreen extends StatefulWidget {
   const NewNewsScreen({super.key});
@@ -29,6 +33,9 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
                   ),
                   hintText: "News Title"),
             ),
+            const SizedBox(
+              height: 10,
+            ),
             TextField(
               controller: detailsController,
               decoration: const InputDecoration(
@@ -36,7 +43,10 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
                   hintText: "News Details"),
-              maxLines: 14,
+              maxLines: 17,
+            ),
+            const SizedBox(
+              height: 20,
             ),
             MaterialButton(
               elevation: 10,
@@ -53,5 +63,83 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
         )));
   }
 
-  void onInsertNewsDialog() {}
+  void onInsertNewsDialog() {
+    if (titleController.text.isEmpty || detailsController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Please enter title and details"),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            title: const Text(
+              "Register this newsletter?",
+              style: TextStyle(),
+            ),
+            content: const Text(
+              "Are you sure?",
+              style: TextStyle(),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text(
+                  "Yes",
+                  style: TextStyle(),
+                ),
+                onPressed: () {
+                  insertNews();
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text(
+                  "No",
+                  style: TextStyle(),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(
+                  //     content: Text("Registration Canceled"),
+                  //     backgroundColor: Colors.red,
+                  //   ),
+                  // );
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  void insertNews() {
+    String title = titleController.text;
+    String details = detailsController.text;
+    http.post(
+        Uri.parse("${Myconfig.servername}/memberlink/api/insert_news.php"),
+        body: {"title": title, "details": details}).then((response) {
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data['status'] == "success") {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Insert Success"),
+            backgroundColor: Colors.green,
+          ));
+          
+          titleController.text = "";
+          detailsController.text = "";
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Insert Failed"),
+            backgroundColor: Colors.red,
+          ));
+        }
+      }
+    });
+  }
 }

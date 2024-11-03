@@ -1,4 +1,11 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:my_member_link/models/news.dart';
+import 'package:my_member_link/view/new_news.dart';
+import 'package:http/http.dart' as http;
+import 'package:my_member_link/myconfig.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -8,16 +15,33 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  TextEditingController titlecontroller = TextEditingController();
-  TextEditingController detailsController = TextEditingController();
+  List<News> newsList = [];
+
+  @override
+  initState() {
+    // TODO: implement initState
+    super.initState();
+    loadNewsData();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(),
-        body: const Center(
-          child: Text("MAIN SCREEN"),
-        ),
+        body: newsList.isEmpty
+            ? const Center(
+              child: Text("Loading..."),
+            ):ListView.builder(
+              itemCount: newsList.length,
+              itemBuilder: (context, index) {
+              return Card(
+                child: ListTile(
+                  title: Text(newsList[index].newsTitle.toString()),
+                  subtitle: Text(newsList[index].newsDetails.toString()),
+                  
+                )
+              );
+            }),
         drawer: Drawer(
           child: ListView(
             children: [
@@ -34,80 +58,58 @@ class _MainScreenState extends State<MainScreen> {
               ),
               ListTile(
                 onTap: () {},
-                title: Text("Event"),
+                title: const Text("Event"),
               ),
               ListTile(
                 onTap: () {},
-                title: Text("Members"),
+                title: const Text("Members"),
               ),
               ListTile(
                 onTap: () {},
-                title: Text("Vetting"),
+                title: const Text("Vetting"),
               ),
               ListTile(
                 onTap: () {},
-                title: Text("Payment"),
+                title: const Text("Payment"),
               ),
               ListTile(
                 onTap: () {},
-                title: Text("Product"),
+                title: const Text("Product"),
               ),
             ],
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showNewDialog();
+          onPressed: () async{
+            
+            await Navigator.push(context,
+            MaterialPageRoute(builder: (content) => const NewNewsScreen()));
+            loadNewsData();
           },
           child: const Icon(Icons.add),
         ));
   }
 
-  void showNewDialog() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(5.0))),
-            title: const Text(
-              "New Newsletter",
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: titlecontroller,
-                    decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    hintText: "News Title"),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-
-                  TextField(
-                    controller: detailsController,
-                    decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                    hintText: "News Details"),
-                    maxLines: 14,
-                  ),
-                  
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(onPressed: (){ }, child: const Text("Submit")),
-              TextButton(onPressed: (){
-                Navigator.pop(context);
-              }, child: const Text("Cancel")),
-            ],
-          );
-        });
+  void loadNewsData() {
+    http
+        .get(Uri.parse("${Myconfig.servername}/memberlink/api/load_news.php"))
+        .then((response) {
+      //log(response.body.toString());
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data['status'] == "success") {
+          var result = data['data']['news'];
+          newsList.clear();
+          for (var item in result) {
+            News news = News.fromJson(item);
+            newsList.add(news);
+            print(news.newsTitle);
+          }
+          setState(() {});
+        } else {
+          print("Error");
+        }
+      }
+    });
   }
 }
