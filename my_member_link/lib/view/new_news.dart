@@ -15,8 +15,13 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
   TextEditingController titleController = TextEditingController();
   TextEditingController detailsController = TextEditingController();
 
+  late double screenWidth, screenHeight;
+
   @override
   Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
+    
     return Scaffold(
         appBar: AppBar(
           title: const Text("New Newsletter"),
@@ -36,15 +41,19 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
             const SizedBox(
               height: 10,
             ),
-            TextField(
-              controller: detailsController,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                  hintText: "News Details"),
-              maxLines: 17,
+            SizedBox(
+              height: screenHeight * 0.6,
+              child: TextField(
+                controller: detailsController,
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                    hintText: "News Details"),
+                maxLines: screenHeight ~/ 20,
+              ),
             ),
+            
             const SizedBox(
               height: 20,
             ),
@@ -130,7 +139,7 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
             content: Text("Insert Success"),
             backgroundColor: Colors.green,
           ));
-          
+
           titleController.text = "";
           detailsController.text = "";
         } else {
