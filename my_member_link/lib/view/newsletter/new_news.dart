@@ -21,13 +21,12 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Scaffold(
         appBar: AppBar(
           title: const Text("New Newsletter"),
         ),
         body: SingleChildScrollView(
-            child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(children: [
             TextField(
@@ -42,7 +41,7 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
               height: 10,
             ),
             SizedBox(
-              height: screenHeight * 0.6,
+              height: screenHeight * 0.65,
               child: TextField(
                 controller: detailsController,
                 decoration: const InputDecoration(
@@ -53,7 +52,6 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
                 maxLines: screenHeight ~/ 20,
               ),
             ),
-            
             const SizedBox(
               height: 20,
             ),
@@ -69,7 +67,7 @@ class _NewNewsScreenState extends State<NewNewsScreen> {
               ),
             )
           ]),
-        )));
+        ));
   }
 
   void onInsertNewsDialog() {

@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:my_member_link/myconfig.dart';
-import 'package:my_member_link/view/main_screen.dart';
-import 'package:my_member_link/view/register_screen.dart';
+import 'package:my_member_link/view/newsletter/main_screen.dart';
+import 'package:my_member_link/view/auth/register_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {

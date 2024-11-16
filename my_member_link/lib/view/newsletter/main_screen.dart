@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:my_member_link/models/news.dart';
-import 'package:my_member_link/view/edit_news.dart';
-import 'package:my_member_link/view/mydrawer.dart';
-import 'package:my_member_link/view/new_news.dart';
+import 'package:my_member_link/view/newsletter/edit_news.dart';
+import 'package:my_member_link/view/shared/mydrawer.dart';
+import 'package:my_member_link/view/newsletter/new_news.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_member_link/myconfig.dart';
 
@@ -18,7 +19,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   List<News> newsList = [];
-  //final df = DateFormat('dd/MM/yyyy hh:mm a');
+  final df = DateFormat('dd/MM/yyyy hh:mm a');
   int numofpage = 1;
   int curpage = 1;
   int numofresult = 0;
@@ -56,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
                   Container(
                     alignment: Alignment.center,
                     child: Text(
-                      "Page: $curpage of $numofpage",
+                      "Page: $curpage /Result: $numofresult /Total Page: $numofpage",
                     ),
                   ),
                   Expanded(
@@ -79,11 +80,11 @@ class _MainScreenState extends State<MainScreen> {
                                     fontSize: 14,
                                   ),
                                 ),
-                                // Text(
-                                //     df.format(DateTime.parse(
-                                //         newsList[index].newsDate.toString())),
-                                //     style: const TextStyle(fontSize: 12),
-                                //   ),
+                                Text(
+                                    df.format(DateTime.parse(
+                                        newsList[index].newsDate.toString())),
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
                               ],
                             ),
                             subtitle: Text(
@@ -152,7 +153,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void loadNewsData() {
     http
-        .get(Uri.parse("${Myconfig.servername}/memberlink/api/load_news.php"))
+        .get(Uri.parse("${Myconfig.servername}/memberlink/api/load_news.php?pageno=$curpage"))
         .then((response) {
       //log(response.body.toString());
       if (response.statusCode == 200) {
@@ -165,7 +166,12 @@ class _MainScreenState extends State<MainScreen> {
             newsList.add(news);
             //print(news.newsTitle);
           }
+          numofpage = int.parse(data['numofpage'].toString());
+          numofresult = int.parse(data['numofresult'].toString());
           setState(() {});
+          // print(numofpage);
+          // print(numofresult);
+         
         } else {
           print("Error");
         }
@@ -241,7 +247,7 @@ class _MainScreenState extends State<MainScreen> {
       //log(response.body.toString());
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
-        //log(data.toString());
+        log(data.toString());
         if (data['status'] == "success") {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text("Delete Success"),

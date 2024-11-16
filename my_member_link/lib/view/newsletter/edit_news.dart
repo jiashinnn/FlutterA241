@@ -29,6 +29,8 @@ class _EditNewsScreenState extends State<EditNewsScreen> {
  
  @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Newsletter"),
@@ -49,7 +51,7 @@ class _EditNewsScreenState extends State<EditNewsScreen> {
                 height: 10,
               ),
               SizedBox(
-                height: screenHeight * 0.7,
+                height: screenHeight * 0.65,
                 child: TextField(
                   controller: detailsController,
                   decoration: const InputDecoration(
@@ -115,6 +117,7 @@ void onUpdateNewsDialog() {
           "title": title,
           "details": details
         }).then((response) {
+          print(response.body);
           if (response.statusCode == 200) {
             var data = jsonDecode(response.body);
             if (data['status'] == "success") {

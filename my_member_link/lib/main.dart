@@ -14,6 +14,15 @@ class MainApp extends StatelessWidget {
       title: 'My Member Link',
       theme: ThemeData(
         useMaterial3: true,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.blue[100], // Custom blue as AppBar color
+          foregroundColor: Colors.black, // AppBar text/icon color
+          scrolledUnderElevation: 0, // Prevent color change on scroll
+        ),
+        cardTheme: const CardTheme(
+          color: Colors.white, // White cards for consistency
+          elevation: 4.0, // Add a slight shadow
+        ),
         colorScheme: ColorScheme.fromSeed(
           seedColor:
               const Color(0xFF0844F4), // Custom blue as the primary color
@@ -25,8 +34,6 @@ class MainApp extends StatelessWidget {
               0xFF4D73FF), // A lighter shade of primary for containers
           secondary: Colors.blue[600]!, // Use a complementary blue as secondary
           onSecondary: Colors.white,
-          background: Colors.white,
-          onBackground: Colors.black87,
           surface: Colors.blue[50]!,
           onSurface: Colors.black87,
           error: Colors.redAccent,
@@ -46,8 +53,6 @@ class MainApp extends StatelessWidget {
               const Color(0xFF0844F4), // Darker primary container color
           secondary: Colors.blue[200]!,
           onSecondary: Colors.black87,
-          background: Colors.black87,
-          onBackground: Colors.white,
           surface: Colors.blueGrey[800]!,
           onSurface: Colors.white,
           error: Colors.redAccent,
@@ -58,4 +63,3 @@ class MainApp extends StatelessWidget {
     );
   }
 }
-
