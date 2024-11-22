@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("assets/images/logo.png", width: 250, height: 250),
+                Image.asset("assets/images/logoo.png", width: 250, height: 250),
                 const SizedBox(
                   height: 10,
                 ),
@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: onLogin,
                     minWidth: 400,
                     height: 50,
-                    color: Colors.purple[800],
+                    color: Colors.blue[900],
                     child: const Text("Login",
                         style: TextStyle(color: Colors.white))),
                 const SizedBox(
