@@ -81,10 +81,10 @@ class _MainScreenState extends State<MainScreen> {
                                   ),
                                 ),
                                 Text(
-                                    df.format(DateTime.parse(
-                                        newsList[index].newsDate.toString())),
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
+                                  df.format(DateTime.parse(
+                                      newsList[index].newsDate.toString())),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
                               ],
                             ),
                             subtitle: Text(
@@ -153,7 +153,8 @@ class _MainScreenState extends State<MainScreen> {
 
   void loadNewsData() {
     http
-        .get(Uri.parse("${Myconfig.servername}/memberlink/api/load_news.php?pageno=$curpage"))
+        .get(Uri.parse(
+            "${Myconfig.servername}/memberlink/api/load_news.php?pageno=$curpage"))
         .then((response) {
       //log(response.body.toString());
       if (response.statusCode == 200) {
@@ -171,7 +172,6 @@ class _MainScreenState extends State<MainScreen> {
           setState(() {});
           // print(numofpage);
           // print(numofresult);
-         
         } else {
           print("Error");
         }

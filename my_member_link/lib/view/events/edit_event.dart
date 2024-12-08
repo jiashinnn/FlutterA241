@@ -6,16 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:my_member_link/models/event.dart';
 import 'package:my_member_link/myconfig.dart';
 
-class NewEventScreen extends StatefulWidget {
-  const NewEventScreen({super.key});
+class EditEventScreen extends StatefulWidget {
+  final Event myevent;
+  const EditEventScreen({super.key, required this.myevent}); //34.47
 
   @override
-  State<NewEventScreen> createState() => _NewEventScreenState();
+  State<EditEventScreen> createState() => _EditEventScreenState();
 }
 
-class _NewEventScreenState extends State<NewEventScreen> {
+class _EditEventScreenState extends State<EditEventScreen> {
   String startDateTime = "", endDateTime = "";
   String eventtypetvalue = 'Conference';
   var selectedStartDateTime, selectedEndDateTime;
