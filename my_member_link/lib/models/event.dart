@@ -1,3 +1,4 @@
+// setter and getter
 class Event {
   String? eventId;
   String? eventTitle;

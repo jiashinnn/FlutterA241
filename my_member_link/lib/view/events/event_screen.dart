@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_member_link/models/event.dart';
+import 'package:my_member_link/view/events/edit_event.dart';
 import 'package:my_member_link/view/events/new_event.dart';
 import 'package:my_member_link/view/shared/mydrawer.dart';
 import 'package:http/http.dart' as http;
@@ -83,9 +84,10 @@ class _EventScreenState extends State<EventScreen> {
                             child: Image.network(
                                 errorBuilder: (context, error, stackTrace) =>
                                     SizedBox(
-                                      height: screenHeight / 6,
+                                      width: screenWidth/2,
+                                      height: screenHeight/6,
                                       child: Image.asset(
-                                          "assets/images/logoo.png"),
+                                          "assets/images/na.png"),
                                     ),
                                 width: screenWidth / 2,
                                 height: screenHeight / 6,
@@ -166,7 +168,7 @@ class _EventScreenState extends State<EventScreen> {
                 children: [
                   Image.network(
                       errorBuilder: (contect, error, stackTrace) => Image.asset(
-                            "assets/images/logoo.png",
+                            "assets/images/na.png",
                           ),
                       width: screenWidth / 2,
                       height: screenHeight / 6,
@@ -196,10 +198,12 @@ class _EventScreenState extends State<EventScreen> {
                 onPressed: () async {
                   Navigator.pop(context);
                   Event event = eventsList[index];
-                  // await Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //         builder: (content) => EditEventScreen(event: event)));
+                  // print(event.eventId.toString());
+                  await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (content) =>
+                              EditEventScreen(myevent: event)));
                   loadEventsData();
                 },
                 child: const Text("Edit Event"),

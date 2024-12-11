@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+// import 'dart:js_interop';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -33,13 +34,27 @@ class _EditEventScreenState extends State<EditEventScreen> {
   TextEditingController locationController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    titleController.text = widget.myevent.eventTitle.toString();
+    descriptionController.text = widget.myevent.eventDescription.toString();
+    locationController.text = widget.myevent.eventLocation.toString();
+    eventtypetvalue = widget.myevent.eventType.toString();
+    var formatter = DateFormat('dd-MM-yyyy hh:mm a');
+    startDateTime = formatter
+        .format(DateTime.parse(widget.myevent.eventStartdate.toString()));
+    endDateTime = formatter
+        .format(DateTime.parse(widget.myevent.eventEnddate.toString()));
+  }
+
+  @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("New Event"),
+        title: const Text("Edit Event"),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8.0),
@@ -55,16 +70,17 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                           image: DecorationImage(
-                            fit: BoxFit.contain,
+                            fit: BoxFit.fill,
                             image: _image == null
-                                ? const AssetImage("assets/images/gallery.png")
+                                ? NetworkImage(
+                                    "${Myconfig.servername}/memberlink/assets/events/${widget.myevent.eventFilename}")
                                 : FileImage(_image!) as ImageProvider,
                           ),
                           borderRadius: BorderRadius.circular(10),
                           color: const Color.fromARGB(41, 107, 107, 107),
                           border: Border.all(
                               color: const Color.fromARGB(200, 128, 127, 127))),
-                      height: screenHeight * 0.3,
+                      height: screenHeight * 0.4,
                     ),
                   ),
                   const SizedBox(
@@ -204,7 +220,7 @@ class _EditEventScreenState extends State<EditEventScreen> {
                     },
                   ),
                   const SizedBox(
-                    height: 20,
+                    height: 10,
                   ),
                   TextFormField(
                       validator: (value) =>
@@ -226,27 +242,19 @@ class _EditEventScreenState extends State<EditEventScreen> {
                         print("STILL HERE");
                         return;
                       }
-                      if (_image == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please take a photo"),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
+                      if (_image != null) {
+                        double filesize = getFileSize(_image!);
+                        print(filesize);
 
-                      double filesize = getFileSize(_image!);
-                      print(filesize);
-
-                      if (filesize > 100) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Image size too large"),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
+                        if (filesize > 100) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Image size too large"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
                       }
                       if (startDateTime == "" || endDateTime == "") {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -258,14 +266,15 @@ class _EditEventScreenState extends State<EditEventScreen> {
                         return;
                       }
 
-                      insertEventDialog();
+                      updateEventDialog();
                     },
                     minWidth: screenWidth,
                     height: 50,
                     color: Theme.of(context).colorScheme.secondary,
                     child: const Text(
-                      "Insert",
+                      "Update",
                       style: TextStyle(color: Colors.white),
+
                     ),
                   )
                 ],
@@ -398,13 +407,13 @@ class _EditEventScreenState extends State<EditEventScreen> {
     return sizeInKB;
   }
 
-  void insertEventDialog() {
+  void updateEventDialog() {
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text(
-              "Insert Event",
+              "Update Event",
               style: TextStyle(),
             ),
             content: const Text(
@@ -418,7 +427,8 @@ class _EditEventScreenState extends State<EditEventScreen> {
                   style: TextStyle(),
                 ),
                 onPressed: () {
-                  insertEvent();
+                  updateEvent();
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
               ),
@@ -437,41 +447,56 @@ class _EditEventScreenState extends State<EditEventScreen> {
         });
   }
 
-  void insertEvent() {
+  void updateEvent() {
+    String image;
     String title = titleController.text;
     String location = locationController.text;
     String description = descriptionController.text;
     String start = selectedStartDateTime.toString();
     String end = selectedEndDateTime.toString();
-    String image = base64Encode(_image!.readAsBytesSync());
+    if (_image == null) {
+      image = "NA";
+    } else {
+      image = base64Encode(_image!.readAsBytesSync());
+    }
+    print(start);
+    print(end);
+    if (start == "null") {
+      start = "NA";
+    }
+    if (end == "null") {
+      end = "NA";
+    }
     //log(image);
     http.post(
-        Uri.parse("${Myconfig.servername}/memberlink/api/insert_event.php"),
+        Uri.parse("${Myconfig.servername}/memberlink/api/update_event.php"),
         body: {
+          "eventid": widget.myevent.eventId.toString(),
           "title": title,
           "location": location,
           "description": description,
           "eventtype": eventtypetvalue,
           "start": start,
           "end": end,
+          "filename": widget.myevent.eventFilename.toString(),
           "image": image
         }).then((response) {
       if (response.statusCode == 200) {
-        var data = jsonDecode(response.body);
+        //var data = jsonDecode(response.body);
 
-        //log(response.body);
-        if (data['status'] == "success") {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Insert Success"),
-            backgroundColor: Colors.green,
-          ));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Insert Failed"),
-            backgroundColor: Colors.red,
-          ));
-        }
+        log(response.body);
+        // if (data['status'] == "success") {
+        //   Navigator.pop(context);
+        //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        //     content: Text("Update Success"),
+        //     backgroundColor: Colors.green,
+        //   ));
+        // } else {
+        //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        //     content: Text("Update Failed"),
+        //     backgroundColor: Colors.red,
+        //   ));
+        // }
       }
     });
   }
