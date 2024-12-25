@@ -7,6 +7,8 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:my_member_link/myconfig.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class NewEventScreen extends StatefulWidget {
   const NewEventScreen({super.key});
@@ -171,8 +173,14 @@ class _NewEventScreenState extends State<NewEventScreen> {
                     validator: (value) =>
                         value!.isEmpty ? "Enter Location" : null,
                     controller: locationController,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(
+                    decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                            onPressed: () {
+                              //determinePosition();
+                              getPositionDialog();
+                            },
+                            icon: const Icon(Icons.location_on)),
+                        border: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
                         hintText: "Event Location"),
@@ -472,5 +480,78 @@ class _NewEventScreenState extends State<NewEventScreen> {
         }
       }
     });
+  }
+
+  Future<void> determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied.');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    Position position = await Geolocator.getCurrentPosition();
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+    if (placemarks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Location not found"),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+    String address = "${placemarks[0].name}, ${placemarks[0].country}";
+    print(address);
+    locationController.text = address;
+    setState(() {
+      print(position.latitude);
+      print(position.longitude);
+    });
+  }
+
+  void getPositionDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: const Text(
+                "Get Location From: ",
+                style: TextStyle(),
+              ),
+              content: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        determinePosition();
+                      },
+                      icon: const Icon(
+                        Icons.location_on,
+                        size: 50,
+                      )),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(
+                        Icons.map,
+                        size: 50,
+                      )),
+                ],
+              ));
+        });
   }
 }
