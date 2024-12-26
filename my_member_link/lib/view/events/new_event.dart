@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -9,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:my_member_link/myconfig.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class NewEventScreen extends StatefulWidget {
   const NewEventScreen({super.key});
@@ -545,6 +547,7 @@ class _NewEventScreenState extends State<NewEventScreen> {
                   IconButton(
                       onPressed: () {
                         Navigator.of(context).pop();
+                        _selectfromMap();
                       },
                       icon: const Icon(
                         Icons.map,
@@ -552,6 +555,64 @@ class _NewEventScreenState extends State<NewEventScreen> {
                       )),
                 ],
               ));
+        });
+  }
+
+  Future<void> _selectfromMap() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied.');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+    if (position == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Location not found"),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+    final Completer<GoogleMapController> mapcontroller =
+        Completer<GoogleMapController>();
+
+    CameraPosition defaultLocation = CameraPosition(
+      target: LatLng(position.latitude, position.longitude),
+      zoom: 14.4746,
+    );
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Select Location"),
+            content: SizedBox(
+              height: screenHeight,
+              width: screenWidth,
+              child: GoogleMap(
+                mapType: MapType.normal,
+                initialCameraPosition: defaultLocation,
+                onMapCreated: (controller) =>
+                    mapcontroller.complete(controller),
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                compassEnabled: true,
+              ),
+            ),
+          );
         });
   }
 }
