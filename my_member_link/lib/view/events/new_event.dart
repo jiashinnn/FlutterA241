@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -559,6 +560,8 @@ class _NewEventScreenState extends State<NewEventScreen> {
   }
 
   Future<void> _selectfromMap() async {
+    String address = "TEXT";
+    Set<Marker> markers = {};
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -586,6 +589,17 @@ class _NewEventScreenState extends State<NewEventScreen> {
       ));
       return;
     }
+
+    LatLng pickupLatLng = LatLng(double.parse(position.latitude.toString()),
+        double.parse(position.longitude.toString()));
+    MarkerId markerId1 = const MarkerId("1");
+    markers.clear();
+    markers.add(Marker(
+      markerId: markerId1,
+      position: pickupLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      infoWindow: const InfoWindow(title: "Your Current Location"),
+    ));
     final Completer<GoogleMapController> mapcontroller =
         Completer<GoogleMapController>();
 
@@ -597,22 +611,75 @@ class _NewEventScreenState extends State<NewEventScreen> {
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            title: const Text("Select Location"),
-            content: SizedBox(
-              height: screenHeight,
-              width: screenWidth,
-              child: GoogleMap(
-                mapType: MapType.normal,
-                initialCameraPosition: defaultLocation,
-                onMapCreated: (controller) =>
-                    mapcontroller.complete(controller),
-                myLocationEnabled: true,
-                myLocationButtonEnabled: true,
-                compassEnabled: true,
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Select Location"),
+              content: Column(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      width: screenWidth,
+                      height: screenHeight,
+                      child: GoogleMap(
+                        mapType: MapType.normal,
+                        initialCameraPosition: defaultLocation,
+                        onMapCreated: (controller) =>
+                            mapcontroller.complete(controller),
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                        compassEnabled: true,
+                        markers: markers.toSet(),
+                        onLongPress:(latlng) => {
+                          setState(() async {
+                            markers.clear();
+                          })
+                        },
+                        onTap: (latlng) => setState(() async {
+                          print(latlng.latitude);
+                          print(latlng.longitude);
+                          await getAddress(latlng)
+                              .then((value) => {address = value,
+                              locationController.text = address});
+                          setState(() {});
+
+                          // address = "${latlng.latitude}, ${latlng.longitude}";
+                          markers.clear();
+                          //int markerIdVa1 = generateIds();
+                          //MarkerId markerId = MarkerId(markerIdVa1.toString());
+                          markers.add(Marker(
+                            markerId: markerId1,
+                            position: latlng,
+                            icon: BitmapDescriptor.defaultMarkerWithHue(
+                                BitmapDescriptor.hueGreen),
+                            infoWindow: const InfoWindow(
+                                title: "Your Current Location"),
+                          ));
+                        }),
+                      ),
+                    ),
+                  ),
+                  Text(address),
+                ],
               ),
-            ),
-          );
+            );
+          });
         });
+  }
+
+  int generateIds() {
+    var rng = Random();
+    int randomInt;
+    randomInt = rng.nextInt(100);
+    return randomInt;
+  }
+
+  Future<String> getAddress(LatLng latlng) async {
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(latlng.latitude, latlng.longitude);
+    if (placemarks.isEmpty) {
+      return "No Location Found";
+    } else {
+      return "${placemarks[0].postalCode}, ${placemarks[0].locality}";
+    }
   }
 }
